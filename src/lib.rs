@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use thiserror::Error;
 
 // Custom errors for Bitcoin operations
@@ -165,13 +164,10 @@ impl TryFrom<&[u8]> for LegacyTransaction {
         let outputs_count = u32::from_le_bytes(data[8..12].try_into().unwrap()) as usize;
         let lock_time = u32::from_le_bytes(data[12..16].try_into().unwrap());
 
-        let inputs = Vec::with_capacity(inputs_count);
-        let outputs = Vec::with_capacity(outputs_count);
-
         Ok(LegacyTransaction {
             version,
-            inputs,
-            outputs,
+            inputs: Vec::with_capacity(inputs_count),
+            outputs: Vec::with_capacity(outputs_count),
             lock_time,
         })
     }
@@ -180,6 +176,7 @@ impl TryFrom<&[u8]> for LegacyTransaction {
 // Custom serialization for transaction
 impl BitcoinSerialize for LegacyTransaction {
     fn serialize(&self) -> Vec<u8> {
+        // Serialize only version and lock_time (simplified) — 4 bytes each = 8 bytes total
         let mut bytes = Vec::with_capacity(8);
         bytes.extend_from_slice(&self.version.to_le_bytes());
         bytes.extend_from_slice(&self.lock_time.to_le_bytes());
